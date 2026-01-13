@@ -1,12 +1,12 @@
 import express from 'express';
 import Quote from '../models/Quote.js';
 import Product from '../models/Product.js';
-import { verifyToken } from '../middleware/auth.js';
+import { verifyBuyerOrAdmin, verifyVendorOrAdmin } from '../middleware/roles.js';
 
 const router = express.Router();
 
-// 1. Create Quote Request (Buyer)
-router.post('/request', verifyToken, async (req, res) => {
+// 1. Create Quote Request (Buyer or Admin)
+router.post('/request', verifyBuyerOrAdmin, async (req, res) => {
   try {
     const { productId, quantity, message } = req.body;
     const buyerId = req.user.id;
@@ -36,8 +36,8 @@ router.post('/request', verifyToken, async (req, res) => {
   }
 });
 
-// 2. Get Quotes for Vendor
-router.get('/vendor', verifyToken, async (req, res) => {
+// 2. Get Quotes for Vendor (Vendor or Admin)
+router.get('/vendor', verifyVendorOrAdmin, async (req, res) => {
   try {
     const quotes = await Quote.find({ vendor: req.user.id })
       .populate('product', 'name category images')
@@ -49,8 +49,8 @@ router.get('/vendor', verifyToken, async (req, res) => {
   }
 });
 
-// 3. Get Quotes for Buyer
-router.get('/buyer', verifyToken, async (req, res) => {
+// 3. Get Quotes for Buyer (Buyer or Admin)
+router.get('/buyer', verifyBuyerOrAdmin, async (req, res) => {
   try {
     const quotes = await Quote.find({ buyer: req.user.id })
       .populate('product', 'name category images')
@@ -62,8 +62,8 @@ router.get('/buyer', verifyToken, async (req, res) => {
   }
 });
 
-// 4. Respond to Quote (Vendor)
-router.patch('/:id/respond', verifyToken, async (req, res) => {
+// 4. Respond to Quote (Vendor or Admin)
+router.patch('/:id/respond', verifyVendorOrAdmin, async (req, res) => {
   try {
     const { vendorPrice, vendorResponse, status } = req.body;
     const quote = await Quote.findOne({ _id: req.params.id, vendor: req.user.id });
@@ -90,8 +90,8 @@ router.patch('/:id/respond', verifyToken, async (req, res) => {
   }
 });
 
-// 5. Accept Quote (Buyer) - Creates Order
-router.post('/:id/accept', verifyToken, async (req, res) => {
+// 5. Accept Quote (Buyer or Admin) - Creates Order
+router.post('/:id/accept', verifyBuyerOrAdmin, async (req, res) => {
   try {
     const quote = await Quote.findOne({ _id: req.params.id, buyer: req.user.id });
     if (!quote) return res.status(404).json({ message: 'Quote not found' });

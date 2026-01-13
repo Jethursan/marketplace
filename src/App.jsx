@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // Auth Pages
 import BuyerAuth from "./pages/BuyerAuth";
 import VendorAuth from "./pages/VendorAuth";
+import AdminAuth from "./pages/AdminAuth";
 
 // Landing & General Pages
 import Landing from "./pages/Landing";
@@ -27,9 +28,17 @@ import VendorSettings from "./pages/VendorSettings";
 import VendorProfile from "./pages/VendorProfile";
 import VendorHelpCenter from "./pages/VendorHelpCenter";
 
+// Admin Pages
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminVendors from "./pages/AdminVendors";
+import AdminBuyers from "./pages/AdminBuyers";
+import AdminSettings from "./pages/AdminSettings";
+
 // Layouts
 import Layout from "./components/layout/Layout";
 import VendorLayout from "./components/layout/VendorLayout";
+import AdminLayout from "./components/layout/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
@@ -42,8 +51,9 @@ export default function App() {
         {/* Separate Login Paths */}
         <Route path="/buyer/login" element={<BuyerAuth />} />
         <Route path="/vendor/login" element={<VendorAuth />} />
+        <Route path="/admin/login" element={<AdminAuth />} />
 
-        {/* 2. Buyer/Public Section (Shared Layout) */}
+        {/* 2. Buyer/Public Section (Shared Layout) - Admins can also access */}
         <Route element={<Layout />}>
           <Route path="/market" element={<Marketplace />} />
           <Route path="/product/:id" element={<ProductDetail />} />
@@ -52,13 +62,13 @@ export default function App() {
           <Route path="/buyer/profile" element={<BuyerProfile />} />
           <Route path="/buyer/settings" element={<BuyerSettings />} />
           <Route path="/buyer/help" element={<BuyerHelpCenter />} />
-        <Route path="/buyer/notifications" element={<BuyerNotifications />} />
+          <Route path="/buyer/notifications" element={<BuyerNotifications />} />
         </Route>
 
-        {/* 3. Vendor Section (Emerald Theme) - Protected */}
+        {/* 3. Vendor Section (Emerald Theme) - Protected (Admins can also access) */}
         <Route
           element={
-            <ProtectedRoute requiredRole="vendor">
+            <ProtectedRoute requiredRole="vendor" allowAdmin={true}>
               <VendorLayout theme="emerald" />
             </ProtectedRoute>
           }
@@ -74,7 +84,22 @@ export default function App() {
           <Route path="/vendor/help" element={<VendorHelpCenter />} />
         </Route>
 
-        {/* 4. Catch-all / Redirects */}
+        {/* 4. Admin Section (Indigo Theme) - Protected */}
+        <Route
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/vendors" element={<AdminVendors />} />
+          <Route path="/admin/buyers" element={<AdminBuyers />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+        </Route>
+
+        {/* 5. Catch-all / Redirects */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

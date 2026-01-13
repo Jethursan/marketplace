@@ -11,6 +11,11 @@ router.post('/signup', async (req, res) => {
   try {
     const { name, email, password, role, companyName } = req.body;
     
+    // Validate role is buyer, vendor, or admin
+    if (role && !['buyer', 'vendor', 'admin'].includes(role)) {
+      return res.status(400).json({ message: "Invalid role. Must be 'buyer', 'vendor', or 'admin'" });
+    }
+    
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: "User already exists" });
 
@@ -21,7 +26,7 @@ router.post('/signup', async (req, res) => {
       name, 
       email, 
       password: hashedPassword, 
-      role, 
+      role: role || 'buyer', // Default to buyer if not specified
       companyName 
     });
 

@@ -1,12 +1,13 @@
 import express from 'express';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
+import { verifyBuyerOrAdmin, verifyVendorOrAdmin } from '../middleware/roles.js';
 import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// 1. Create Order (Buyer - Direct Purchase)
-router.post('/create', verifyToken, async (req, res) => {
+// 1. Create Order (Buyer or Admin - Direct Purchase)
+router.post('/create', verifyBuyerOrAdmin, async (req, res) => {
   try {
     const { productId, quantity, unitPrice, shippingAddress } = req.body;
     const buyerId = req.user.id;
@@ -39,8 +40,8 @@ router.post('/create', verifyToken, async (req, res) => {
   }
 });
 
-// 2. Get Orders for Vendor
-router.get('/vendor', verifyToken, async (req, res) => {
+// 2. Get Orders for Vendor (Vendor or Admin)
+router.get('/vendor', verifyVendorOrAdmin, async (req, res) => {
   try {
     const orders = await Order.find({ vendor: req.user.id })
       .populate('product', 'name category images')
@@ -52,8 +53,8 @@ router.get('/vendor', verifyToken, async (req, res) => {
   }
 });
 
-// 3. Get Orders for Buyer
-router.get('/buyer', verifyToken, async (req, res) => {
+// 3. Get Orders for Buyer (Buyer or Admin)
+router.get('/buyer', verifyBuyerOrAdmin, async (req, res) => {
   try {
     const orders = await Order.find({ buyer: req.user.id })
       .populate('product', 'name category images')
@@ -65,8 +66,8 @@ router.get('/buyer', verifyToken, async (req, res) => {
   }
 });
 
-// 4. Update Order Status (Vendor)
-router.patch('/:id/status', verifyToken, async (req, res) => {
+// 4. Update Order Status (Vendor or Admin)
+router.patch('/:id/status', verifyVendorOrAdmin, async (req, res) => {
   try {
     const { status, trackingNumber, carrier, estimatedDelivery } = req.body;
     const order = await Order.findOne({ _id: req.params.id, vendor: req.user.id });
